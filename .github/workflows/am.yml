@@ -37,6 +37,7 @@ jobs:
       - name: Build and push Docker image
         id: build-image
         run: |
+          cd frontend
           IMAGE_URI=195215160790.dkr.ecr.us-east-1.amazonaws.com/frontend:${{ github.sha }}
           docker build -t $IMAGE_URI .
           docker push $IMAGE_URI
