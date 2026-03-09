@@ -1,0 +1,64 @@
+name: Deploy to ECS
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REPOSITORY: frontend
+  ECS_SERVICE: frontend-definition-khush-service-z7aw2gb8
+  ECS_CLUSTER: frontend-cluster-khush
+  ECS_TASK_DEFINITION: frontend-task-khush
+  CONTAINER_NAME: frontend
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Login to ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push Docker image
+        id: build-image
+        run: |
+          IMAGE_URI=195215160790.dkr.ecr.us-east-1.amazonaws.com/frontend:${{ github.sha }}
+          docker build -t $IMAGE_URI .
+          docker push $IMAGE_URI
+          echo "image=$IMAGE_URI" >> $GITHUB_OUTPUT
+
+      - name: Download task definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition frontend-task \
+            --query taskDefinition > task-definition.json
+
+      - name: Update image in task definition
+        id: render-task
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          container-name: frontend
+          image: ${{ steps.build-image.outputs.image }}
+
+      - name: Deploy to ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.render-task.outputs.task-definition }}
+          service: frontend-service
+          cluster: frontend-cluster
+          wait-for-service-stability: true
