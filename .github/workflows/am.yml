@@ -61,6 +61,6 @@ jobs:
         uses: aws-actions/amazon-ecs-deploy-task-definition@v2
         with:
           task-definition: ${{ steps.render-task.outputs.task-definition }}
-          service: frontend-service
-          cluster: frontend-cluster
+          service: frontend-definition-khush-service-z7aw2gb8
+          cluster: frontend-cluster-khush
           wait-for-service-stability: true
