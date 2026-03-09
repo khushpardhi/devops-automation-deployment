@@ -34,11 +34,20 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Build and push Docker image
+      - name: Build and push frontend Docker image
         id: build-image
         run: |
           cd frontend
           IMAGE_URI=195215160790.dkr.ecr.us-east-1.amazonaws.com/frontend:${{ github.sha }}
+          docker build -t $IMAGE_URI .
+          docker push $IMAGE_URI
+          echo "image=$IMAGE_URI" >> $GITHUB_OUTPUT
+
+      - name: Build backend image
+        id: build-backend
+        run: |
+          cd backend
+          IMAGE_URI=195215160790.dkr.ecr.us-east-1.amazonaws.com/backend:${{ github.sha }}
           docker build -t $IMAGE_URI .
           docker push $IMAGE_URI
           echo "image=$IMAGE_URI" >> $GITHUB_OUTPUT
@@ -56,6 +65,14 @@ jobs:
           task-definition: task-definition.json
           container-name: frontend
           image: ${{ steps.build-image.outputs.image }}
+
+      - name: Update backend container
+        id: render-backend
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ${{ steps.render-frontend.outputs.task-definition }}
+          container-name: backend
+          image: ${{ steps.build-backend.outputs.image }}
 
       - name: Deploy to ECS
         uses: aws-actions/amazon-ecs-deploy-task-definition@v2
