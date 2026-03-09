@@ -46,7 +46,7 @@ jobs:
       - name: Download task definition
         run: |
           aws ecs describe-task-definition \
-            --task-definition frontend-task \
+            --task-definition frontend-definition-khush \
             --query taskDefinition > task-definition.json
 
       - name: Update image in task definition
