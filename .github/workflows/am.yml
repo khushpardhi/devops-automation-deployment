@@ -58,7 +58,7 @@ jobs:
             --task-definition frontend-definition-khush \
             --query taskDefinition > task-definition.json
 
-      - name: Update image in task definition
+      - name: Update frontend image in task definition
         id: render-task
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
@@ -66,11 +66,11 @@ jobs:
           container-name: frontend
           image: ${{ steps.build-image.outputs.image }}
 
-      - name: Update backend container
+      - name: Update backend image in task definition
         id: render-backend
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
-          task-definition: ${{ steps.render-frontend.outputs.task-definition }}
+          task-definition: task-definition.json
           container-name: backend
           image: ${{ steps.build-backend.outputs.image }}
 
