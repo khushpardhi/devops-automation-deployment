@@ -12,7 +12,7 @@ env:
   ECS_SERVICE: frontend-definition-khush-service-z7aw2gb8
   ECS_CLUSTER: frontend-cluster-khush
   ECS_TASK_DEFINITION: frontend-task-khush
-  CONTAINER_NAME: frontend
+  CONTAINER_NAME: frontend-cluster-khush
 
 jobs:
   deploy:
